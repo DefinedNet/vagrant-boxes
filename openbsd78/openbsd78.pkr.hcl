@@ -1,8 +1,8 @@
 packer {
   required_plugins {
-    virtualbox = {
+    qemu = {
       version = ">= 1.1.0"
-      source  = "github.com/hashicorp/virtualbox"
+      source  = "github.com/hashicorp/qemu"
     }
     vagrant = {
       version = ">= 1.1.0"
@@ -26,22 +26,21 @@ variable "iso_checksum" {
   default = "sha256:a228d0a1ef558b4d9ec84c698f0d3ffd13cd38c64149487cba0f1ad873be07b2"
 }
 
-source "virtualbox-iso" "openbsd78" {
-  guest_os_type    = "OpenBSD_64"
+source "qemu" "openbsd78" {
   iso_url          = var.iso_url
   iso_checksum     = var.iso_checksum
   ssh_username     = "root"
   ssh_password     = "vagrant"
   ssh_timeout      = "30m"
   shutdown_command = "halt -p"
-  disk_size        = 20000
+  disk_size        = "20G"
   memory           = 2048
   cpus             = 2
   headless         = true
-
-  vboxmanage = [
-    ["modifyvm", "{{ .Name }}", "--nat-localhostreachable1", "on"]
-  ]
+  vnc_port_min     = 5950
+  vnc_port_max     = 5950
+  accelerator      = "kvm"
+  format           = "qcow2"
 
   http_directory = "http"
 
@@ -54,13 +53,13 @@ source "virtualbox-iso" "openbsd78" {
 }
 
 build {
-  sources = ["source.virtualbox-iso.openbsd78"]
+  sources = ["source.qemu.openbsd78"]
 
   provisioner "shell" {
     script = "scripts/provision.sh"
   }
 
   post-processor "vagrant" {
-    output = "openbsd78-virtualbox.box"
+    output = "openbsd78-libvirt.box"
   }
 }
