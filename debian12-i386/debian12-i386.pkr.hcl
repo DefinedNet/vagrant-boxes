@@ -13,15 +13,15 @@ packer {
 
 variable "iso_url" {
   type    = string
-  default = "https://cdimage.debian.org/cdimage/archive/11.11.0/i386/iso-cd/debian-11.11.0-i386-netinst.iso"
+  default = "https://cdimage.debian.org/cdimage/archive/12.13.0/i386/iso-cd/debian-12.13.0-i386-netinst.iso"
 }
 
 variable "iso_checksum" {
   type    = string
-  default = "sha256:cc7bb888562a02e9f49bc93233c49be1f2decdb9934bd5b805f114a4eeb9e052"
+  default = "sha256:61e5dbec68c511713611ffec58e40ba26c76487864b7dddfc59f8e55bacbe56a"
 }
 
-source "qemu" "debian11-i386" {
+source "qemu" "debian12-i386" {
   iso_url          = var.iso_url
   iso_checksum     = var.iso_checksum
   ssh_username     = "vagrant"
@@ -39,6 +39,7 @@ source "qemu" "debian11-i386" {
   machine_type     = "pc"
   disk_interface   = "ide"
   qemuargs         = [
+    ["-cpu", "EPYC-Rome"],
     ["-serial", "file:serial.log"],
   ]
 
@@ -52,13 +53,13 @@ source "qemu" "debian11-i386" {
 }
 
 build {
-  sources = ["source.qemu.debian11-i386"]
+  sources = ["source.qemu.debian12-i386"]
 
   provisioner "shell" {
     script = "scripts/provision.sh"
   }
 
   post-processor "vagrant" {
-    output = "debian11-i386-libvirt.box"
+    output = "debian12-i386-libvirt.box"
   }
 }

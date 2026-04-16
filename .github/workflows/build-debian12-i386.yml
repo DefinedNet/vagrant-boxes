@@ -1,17 +1,17 @@
-name: Build Debian 11 i386 Vagrant Box
+name: Build Debian 12 i386 Vagrant Box
 
 on:
   workflow_dispatch:
   push:
     paths:
-      - 'debian11-i386/**'
+      - 'debian12-i386/**'
 
 jobs:
   build:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: debian11-i386
+        working-directory: debian12-i386
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
@@ -26,43 +26,43 @@ jobs:
       - name: Cache ISO
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae #v5.0.5
         with:
-          path: ~/.cache/packer/debian-11-i386.iso
-          key: debian-11.11.0-i386-netinst-iso
+          path: ~/.cache/packer/debian-12-i386.iso
+          key: debian-12.12.0-i386-netinst-iso
           save-always: true
 
       - name: Download ISO
         run: |
           mkdir -p ~/.cache/packer
-          if [ ! -f ~/.cache/packer/debian-11-i386.iso ]; then
-            curl -fSL -o ~/.cache/packer/debian-11-i386.iso https://cdimage.debian.org/cdimage/archive/11.11.0/i386/iso-cd/debian-11.11.0-i386-netinst.iso
+          if [ ! -f ~/.cache/packer/debian-12-i386.iso ]; then
+            curl -fSL -o ~/.cache/packer/debian-12-i386.iso https://cdimage.debian.org/cdimage/archive/12.13.0/i386/iso-cd/debian-12.13.0-i386-netinst.iso
           fi
-          echo "cc7bb888562a02e9f49bc93233c49be1f2decdb9934bd5b805f114a4eeb9e052  $HOME/.cache/packer/debian-11-i386.iso" | sha256sum -c
+          echo "61e5dbec68c511713611ffec58e40ba26c76487864b7dddfc59f8e55bacbe56a  $HOME/.cache/packer/debian-12-i386.iso" | sha256sum -c
 
       - name: Init Packer plugins
-        run: packer init debian11-i386.pkr.hcl
+        run: packer init debian12-i386.pkr.hcl
 
       - name: Build box
-        run: PACKER_LOG=1 packer build -on-error=abort -var "iso_url=$HOME/.cache/packer/debian-11-i386.iso" debian11-i386.pkr.hcl
+        run: PACKER_LOG=1 packer build -on-error=abort -var "iso_url=$HOME/.cache/packer/debian-12-i386.iso" debian12-i386.pkr.hcl
 
       - name: Upload box as artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
         with:
-          name: debian11-i386-libvirt
-          path: debian11-i386/debian11-i386-libvirt.box
+          name: debian12-i386-libvirt
+          path: debian12-i386/debian12-i386-libvirt.box
 
       - name: Upload serial log on failure
         if: failure() || cancelled()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
         with:
           name: serial-log
-          path: debian11-i386/serial.log
+          path: debian12-i386/serial.log
 
       - name: Upload qcow2 on failure (for local inspection)
         if: failure() || cancelled()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
         with:
           name: failed-qcow2
-          path: debian11-i386/output-debian11-i386/packer-debian11-i386
+          path: debian12-i386/output-debian12-i386/packer-debian12-i386
 
       - name: Publish to HCP Vagrant Registry
         if: github.ref == 'refs/heads/main'
@@ -74,7 +74,7 @@ jobs:
           vagrant cloud publish \
             --force \
             --release \
-            DefinedNet/debian11-i386 \
+            DefinedNet/debian12-i386 \
             1.0.${{ github.run_number }} \
             libvirt \
-            debian11-i386-libvirt.box
+            debian12-i386-libvirt.box
