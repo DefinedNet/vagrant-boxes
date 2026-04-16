@@ -11,5 +11,3 @@ sudo chown -R vagrant:vagrant /home/vagrant/.ssh
 # Clean up
 sudo apt-get clean
 sudo rm -rf /tmp/*
-sudo dd if=/dev/zero of=/tmp/zero bs=1M 2>/dev/null || true
-sudo rm -f /tmp/zero

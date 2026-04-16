@@ -16,6 +16,11 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
 
+      - name: Print host CPU info
+        run: |
+          lscpu
+          cat /proc/cpuinfo | head -30
+
       - name: Install dependencies
         run: |
           curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
@@ -50,8 +55,8 @@ jobs:
           name: debian12-i386-libvirt
           path: debian12-i386/debian12-i386-libvirt.box
 
-      - name: Upload serial log on failure
-        if: failure() || cancelled()
+      - name: Upload serial log
+        if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
         with:
           name: serial-log

@@ -39,7 +39,8 @@ source "qemu" "debian12-i386" {
   machine_type     = "pc"
   disk_interface   = "ide"
   qemuargs         = [
-    ["-cpu", "EPYC-Rome"],
+    ["-cpu", "qemu32"],
+    ["-machine", "type=pc,accel=kvm,smm=off"],
     ["-serial", "file:serial.log"],
   ]
 
@@ -48,7 +49,7 @@ source "qemu" "debian12-i386" {
   boot_wait = "5s"
   boot_command = [
     "<esc><wait>",
-    "auto url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg<enter>",
+    "auto url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg console=ttyS0,115200<enter>",
   ]
 }
 
