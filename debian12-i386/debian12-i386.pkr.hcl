@@ -34,11 +34,12 @@ source "qemu" "debian12-i386" {
   headless         = true
   vnc_port_min     = 5950
   vnc_port_max     = 5950
-  accelerator      = "tcg"
+  accelerator      = "kvm"
   format           = "qcow2"
   machine_type     = "pc"
   disk_interface   = "ide"
   qemuargs         = [
+    ["-cpu", "EPYC-Rome"],
     ["-serial", "file:serial.log"],
   ]
 
