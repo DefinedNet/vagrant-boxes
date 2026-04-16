@@ -16,18 +16,6 @@ packer build openbsd78.pkr.hcl
 
 Produces `openbsd78-libvirt.box`.
 
-### Debian 12 i386 (libvirt)
-
-Minimal 32-bit Debian 12 box for testing i386 binaries. Uses extlinux as the bootloader because GRUB hangs on i386 under QEMU.
-
-```sh
-cd debian12-i386
-packer init debian12-i386.pkr.hcl
-packer build debian12-i386.pkr.hcl
-```
-
-Produces `debian12-i386-libvirt.box`.
-
 ## Building locally
 
 Requires KVM. Both boxes use QEMU with KVM acceleration.
