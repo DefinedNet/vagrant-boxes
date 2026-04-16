@@ -42,13 +42,27 @@ jobs:
         run: packer init debian12-i386.pkr.hcl
 
       - name: Build box
-        run: PACKER_LOG=1 packer build -var "iso_url=$HOME/.cache/packer/debian-12-i386.iso" debian12-i386.pkr.hcl
+        run: PACKER_LOG=1 packer build -on-error=abort -var "iso_url=$HOME/.cache/packer/debian-12-i386.iso" debian12-i386.pkr.hcl
 
       - name: Upload box as artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
         with:
           name: debian12-i386-libvirt
           path: debian12-i386/debian12-i386-libvirt.box
+
+      - name: Upload serial log on failure
+        if: failure() || cancelled()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
+        with:
+          name: serial-log
+          path: debian12-i386/serial.log
+
+      - name: Upload qcow2 on failure (for local inspection)
+        if: failure() || cancelled()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
+        with:
+          name: failed-qcow2
+          path: debian12-i386/output-debian12-i386/packer-debian12-i386
 
       - name: Publish to HCP Vagrant Registry
         if: github.ref == 'refs/heads/main'

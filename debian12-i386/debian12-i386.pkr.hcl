@@ -24,20 +24,23 @@ variable "iso_checksum" {
 source "qemu" "debian12-i386" {
   iso_url          = var.iso_url
   iso_checksum     = var.iso_checksum
-  ssh_username     = "root"
+  ssh_username     = "vagrant"
   ssh_password     = "vagrant"
   ssh_timeout      = "30m"
-  shutdown_command = "shutdown -h now"
+  shutdown_command = "sudo /sbin/shutdown -h now"
   disk_size        = "20G"
   memory           = 2048
   cpus             = 2
   headless         = true
   vnc_port_min     = 5950
   vnc_port_max     = 5950
-  accelerator      = "kvm"
+  accelerator      = "tcg"
   format           = "qcow2"
   machine_type     = "pc"
   disk_interface   = "ide"
+  qemuargs         = [
+    ["-serial", "file:serial.log"],
+  ]
 
   http_directory = "http"
 

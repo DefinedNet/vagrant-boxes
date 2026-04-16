@@ -10,13 +10,17 @@ cat > /boot/extlinux.conf <<EOF
 DEFAULT debian
 LABEL debian
   KERNEL /boot/$KERNEL
-  APPEND root=UUID=$ROOTUUID ro net.ifnames=0
+  APPEND root=UUID=$ROOTUUID ro net.ifnames=0 biosdevname=0
   INITRD /boot/$INITRD
 EOF
 dd if=/usr/lib/syslinux/mbr/mbr.bin of=/dev/sda bs=440 count=1
 
-# Enable root SSH login for Packer
-echo "PermitRootLogin yes" > /etc/ssh/sshd_config.d/permit-root-login.conf
+# Enable root SSH login for Packer, accept RSA keys
+cat > /etc/ssh/sshd_config.d/packer.conf <<EOF
+PermitRootLogin yes
+PubkeyAcceptedAlgorithms +ssh-rsa
+HostKeyAlgorithms +ssh-rsa
+EOF
 
 # Add virtio modules to initrd
 echo virtio_net >> /etc/initramfs-tools/modules
@@ -33,3 +37,4 @@ allow-hotplug eth0
 iface eth0 inet dhcp
 EOF
 rm -rf /etc/network/interfaces.d
+rm -f /etc/udev/rules.d/70-persistent-net.rules
