@@ -1,0 +1,67 @@
+name: Build NetBSD 10.1 Vagrant Box
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'netbsd10/**'
+      - '.github/workflows/build-netbsd10.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: netbsd10
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
+
+      - name: Install dependencies
+        run: |
+          curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+          sudo apt-get update && sudo apt-get install -y qemu-system-x86 qemu-utils vagrant packer hcp python3 python3-pexpect genisoimage
+          sudo chmod 666 /dev/kvm
+          # Anita's pypi namespace is owned by an unrelated package, and its
+          # setup.py uses distutils (gone in py3.12). Clone and fix the py2
+          # shebang instead of pip-installing.
+          git clone --depth 1 https://github.com/gson1703/anita.git "$HOME/anita"
+          sed -i '1c#!/usr/bin/env python3' "$HOME/anita/anita"
+          echo "$HOME/anita" >> "$GITHUB_PATH"
+
+      - name: Init Packer plugins
+        run: packer init netbsd10.pkr.hcl
+
+      - name: Cache anita workdir
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae #v5.0.5
+        with:
+          path: netbsd10/anita-work
+          key: netbsd-10.1-anita-v2
+
+      - name: Run anita install
+        run: ./scripts/anita-install.sh
+
+      - name: Build box
+        run: PACKER_LOG=1 packer build netbsd10.pkr.hcl
+
+      - name: Upload box as artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
+        with:
+          name: netbsd10-libvirt
+          path: netbsd10/netbsd10-libvirt.box
+
+      - name: Publish to HCP Vagrant Registry
+        if: github.ref == 'refs/heads/main'
+        env:
+          HCP_CLIENT_ID: ${{ secrets.HCP_CLIENT_ID }}
+          HCP_CLIENT_SECRET: ${{ secrets.HCP_CLIENT_SECRET }}
+        run: |
+          hcp auth login --client-id="$HCP_CLIENT_ID" --client-secret="$HCP_CLIENT_SECRET"
+          vagrant cloud publish \
+            --force \
+            --release \
+            DefinedNet/netbsd10 \
+            1.0.${{ github.run_number }} \
+            libvirt \
+            netbsd10-libvirt.box
