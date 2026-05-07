@@ -34,7 +34,10 @@ source "qemu" "netbsd10" {
   iso_url              = var.base_image
   iso_checksum         = "none"
   disk_image           = true
-  use_backing_file     = true
+  # Don't use a backing file: the output qcow2 would carry an absolute
+  # path reference to the build host's anita-work/wd0.qcow2, which won't
+  # exist on the user's machine. Pay the copy cost so the box is portable.
+  use_backing_file     = false
   ssh_username         = "root"
   ssh_private_key_file = var.ssh_private_key_file
   ssh_timeout          = "15m"
