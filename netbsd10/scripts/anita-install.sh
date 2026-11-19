@@ -13,7 +13,9 @@
 set -eux
 
 WORKDIR="${WORKDIR:-anita-work}"
-RELEASE_URL="${RELEASE_URL:-https://cdn.netbsd.org/pub/NetBSD/NetBSD-10.1/amd64/}"
+# 10.1's sets moved off the CDN to the archive once 10.2 came out, and the archive copy
+# doesn't move again
+RELEASE_URL="${RELEASE_URL:-https://archive.netbsd.org/pub/NetBSD-archive/NetBSD-10.1/amd64/}"
 
 mkdir -p "$WORKDIR"
 
