@@ -31,9 +31,9 @@ variable "ssh_private_key_file" {
 }
 
 source "qemu" "netbsd10" {
-  iso_url              = var.base_image
-  iso_checksum         = "none"
-  disk_image           = true
+  iso_url      = var.base_image
+  iso_checksum = "none"
+  disk_image   = true
   # Don't use a backing file: the output qcow2 would carry an absolute
   # path reference to the build host's anita-work/wd0.qcow2, which won't
   # exist on the user's machine. Pay the copy cost so the box is portable.
